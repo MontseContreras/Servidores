@@ -1,0 +1,28 @@
+#!/bin/sh
+## Este script permite conectarse a una red wifi wpa
+##Para ejecutarlo debes escribir 'sudo ./wifi <ssid> <pass>' para determinar la red a la que te quieres conectar
+
+ifdown wlo1
+sudo systemctl start wpa_supplicant
+
+# build the interfaces file that will point to the file that holds our configuration
+rm /etc/network/interfaces
+touch /etc/network/interfaces
+#echo 'auto lo' >> /etc/network/interfaces
+#echo 'iface lo inet loopback' >> /etc/network/interfaces
+echo 'iface eno1 inet dhcp' >> /etc/network/interfaces
+echo 'allow-hotplug wlo1' >> /etc/network/interfaces
+echo 'iface wlo1 inet manual' >> /etc/network/interfaces
+echo 'wpa-driver wext' >> /etc/network/interfaces
+echo 'wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf' >> /etc/network/interfaces
+#echo 'wpa-roam /etc/wpa_supplicant/wpa_supplicant.conf' >> /etc/network/interfaces
+echo 'iface default inet dhcp' >> /etc/network/interfaces
+
+# build the supplicant file that holds our configuration
+rm /etc/wpa_supplicant/wpa_supplicant.conf
+touch /etc/wpa_supplicant/wpa_supplicant.conf
+echo 'ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev' >> /etc/wpa_supplicant/wpa_supplicant.conf
+echo 'update_config=1' >> /etc/wpa_supplicant/wpa_supplicant.conf
+wpa_passphrase $1 $2 >> /etc/wpa_supplicant/wpa_supplicant.conf
+
+ifup wlo1
