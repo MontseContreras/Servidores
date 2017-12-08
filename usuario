@@ -1,0 +1,42 @@
+#!/bin/bash
+echo "Este script permite crear nuevos usuarios"
+echo "Ingresa el nombre del usuario"
+read usuario
+
+echo "Ingresa un comentario para el usuario"
+read comen
+
+echo "Grupos existentes:"
+cat /etc/group
+
+echo "¿A qué grupo pertenecerá el usuario?"
+read grupo
+sudo groupadd $grupo
+
+echo "Ingrese la ruta del directorio hogar:"
+read hogar
+sudo useradd -c $comen -d $hogar -m -k /etc/skel -g $grupo -s /bin/bash $usuario
+
+echo "USUARIO CREADO"
+sleep 2
+
+echo -n "Modificar contraseña del usuario: "$usuario
+sleep 2
+
+echo "La contraseña debe ser de 8 caracteres, 2 mayúsculas y 1 número"
+echo "Ingrese una contraseña"
+STTY_SAVE=`stty -g`
+stty -echo
+read contra
+stty $STTY_SAVE
+longitud=${#contra}
+if [ $longitud = 8 ];
+	then 
+	echo "Contraseña válida"
+	echo "$usuario:$contra" | sudo chpasswd
+	else
+		echo "Contraseña inválida"
+fi
+
+echo "CONTRASEÑA DEFINIDA"
+echo "Hasta pronto"

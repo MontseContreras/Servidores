@@ -1,0 +1,81 @@
+#!/bin/bash
+echo "Este script permite crear usuarios, asignar quotas y utilizar comandos mediante SUDO"
+echo "Ingresa el nombre del usuario"
+read usuario
+
+echo "Ingresa un comentario para el usuario"
+read comen
+
+echo "Grupos que existen:"
+cat /etc/group
+
+echo "¿A qué grupo pertenecerá el usuario?"
+read grupo
+sudo groupadd $grupo
+
+echo "Ingrese la ruta del directorio hogar"
+read hogar
+
+sudo useradd -c $comen -d $hogar -m -k /etc/skel -g $grupo -s /bin/bash $usuario
+
+echo "USUARIO CREADO"
+sleep 2
+
+echo -n "Modificar contraseña del usuario:"$usuario
+sleep 2
+
+echo  "La contraseña debe ser de 8 caracteres, 2 mayúsculas y 1 número"
+echo  "Ingrese la contraseña del usuario"
+STTY_SAVE=`stty -g`
+stty -echo
+read contra
+stty $STTY_SAVE
+longitud=${#contra}
+if [ $longitud = 8 ];
+then 
+	echo "Contraseña válida"
+	echo "$usuario:$contra" | sudo chpasswd
+	else
+		echo "Contraseñan inválida"
+fi
+
+echo -e "CONTRASEÑA DEFINIDA"
+sleep 2
+
+echo "---------------------------------------------------"
+echo "| UN GRAN PODER CONLLEVA UNA GRAN RESPONSABILIDAD |"
+echo "---------------------------------------------------"
+sleep 2
+
+echo " ______________________________________"
+echo "|      La asignacion de cuotas         |"
+echo "|          Debe ser en MB     	     |"
+echo "|          1024 MB = 1 GB              |"
+echo "|                                      |"
+echo "|  Debe ser en el primer SOFT y HARD   |"
+echo "|      Que aparezca en el archivo      |"
+echo "|                                      |"
+echo "|     SOFT debe ser menor que HARD     |"
+echo "|     O incluso, del mismo tamaño      |"
+echo "|  PERO NUNCA DEBE SER MAYOR QUE HARD  |"
+echo "|                                      |"
+echo "|  Al terminar de asignar las quotas   |"
+echo "|      Deberas oprimir 'Ctrl+K'        |"
+echo "|      Y despues 'q' para salir        |"
+echo "|  Para guardarlo, deberas oprimir 'y' |"
+echo "|______________________________________|"
+sleep 30
+
+sudo edquota -u $usuario
+
+echo "SE HA ASIGNADO LA CUOTA"
+sleep 2
+
+echo "EL USUARIO PODRA AGREGAR COMANDO VIA SUDO"
+
+sudo sed -i '$a '$usuario' ALL=(ALL:ALL) ALL' /etc/sudoers
+sleep 2
+echo "SE ASIGNO CORRECTAMENTE EN /ETC/SUDOERS"
+
+
+echo "Hasta pronto"
